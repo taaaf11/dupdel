@@ -16,7 +16,7 @@ def original_exists(path: str):
 
 def make_original_path(path: str):
     parent, basename = os.path.split(path)
-    original_basename = original_regex.sub('', '')
+    original_basename = original_regex.sub('', basename)
     return os.path.join(parent, original_basename)
 
 
