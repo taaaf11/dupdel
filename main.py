@@ -7,7 +7,7 @@ duplicate_regex = re.compile(r'\w+\s*\([1-9]+\)\s*.*')
 
 
 def detect_duplicate(path: str):
-    return re.match(duplicate_regex, os.path.basename(path))
+    return duplicate_regex.fullmatch(os.path.basename(path))
 
 
 def original_exists(path: str):
