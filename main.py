@@ -1,3 +1,4 @@
+import filecmp
 import os
 import re
 
@@ -25,7 +26,8 @@ def main():
 
     for duplicate in duplicates:
         if original_exists(duplicate):
-            os.remove(duplicate)
+            if filecmp.cmp(duplicate, make_original_path(duplicate), False):
+                os.remove(duplicate)
         else:
             os.rename(duplicate, make_original_path(duplicate))
 
