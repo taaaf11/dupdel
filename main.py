@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from re import Match
+    from typing import Iterable
 
 
 # similar: The files are apparently duplicate (by their names)
@@ -35,16 +36,21 @@ def make_similar_original_path(path: str) -> str:
     return os.path.join(parent, original_basename)
 
 
-def main() -> None:
-    filenames = os.listdir()
-    duplicates = [filename for filename in filenames if detect_similar(filename)]
+def get_duplicates() -> Iterable[str]:
+    yield from filter(detect_similar, os.listdir('.'))
 
+
+def delete_duplicates(duplicates: Iterable[str]) -> None:
     for duplicate in duplicates:
         if similarly_original_exists(duplicate):
             if identical_exists(duplicate):
                 os.remove(duplicate)
         else:
             os.rename(duplicate, make_similar_original_path(duplicate))
+
+
+def main() -> None:
+    delete_duplicates(get_duplicates())
 
 
 if __name__ == '__main__':
