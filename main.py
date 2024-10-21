@@ -2,19 +2,27 @@ import filecmp
 import os
 import re
 
+# similar: The files are apparently duplicate (by their names)
+# identical: The files are similar and their contents are also same
+
 original_regex = re.compile(r'\s*\([1-9]+\)\s*')
 duplicate_regex = re.compile(r'\w+\s*\([1-9]+\)\s*.*')
 
 
-def detect_duplicate(path: str):
+def detect_similar(path: str):
     return duplicate_regex.fullmatch(os.path.basename(path))
 
 
-def original_exists(path: str):
-    return os.path.exists(make_original_path(path))
+def similarly_original_exists(path: str):
+    return os.path.exists(make_similar_original_path(path))
 
 
-def make_original_path(path: str):
+def identical_exists(duplicate_path: str):
+    similar_original_path = make_similar_original_path(duplicate_path)
+    return similarly_original_exists(duplicate_path) and filecmp.cmp(similar_original_path, duplicate_path, False)
+
+
+def make_similar_original_path(path: str):
     parent, basename = os.path.split(path)
     original_basename = original_regex.sub('', basename)
     return os.path.join(parent, original_basename)
@@ -22,14 +30,14 @@ def make_original_path(path: str):
 
 def main():
     filenames = os.listdir()
-    duplicates = [filename for filename in filenames if detect_duplicate(filename)]
+    duplicates = [filename for filename in filenames if detect_similar(filename)]
 
     for duplicate in duplicates:
-        if original_exists(duplicate):
-            if filecmp.cmp(duplicate, make_original_path(duplicate), False):
+        if similarly_original_exists(duplicate):
+            if identical_exists(duplicate):
                 os.remove(duplicate)
         else:
-            os.rename(duplicate, make_original_path(duplicate))
+            os.rename(duplicate, make_similar_original_path(duplicate))
 
 
 if __name__ == '__main__':
