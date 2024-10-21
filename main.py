@@ -4,6 +4,7 @@ import filecmp
 import os
 import re
 from argparse import ArgumentParser
+from functools import partial
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -38,8 +39,13 @@ def make_similar_original_path(path: str) -> str:
     return os.path.join(parent, original_basename)
 
 
-def get_duplicates() -> Iterable[str]:
-    yield from filter(detect_similar, os.listdir('.'))
+def get_duplicates(recursive: bool) -> Iterable[str]:
+    for path, _, filenames in os.walk('.'):
+        path_join = partial(os.path.join, path)
+        full_paths = map(path_join, filenames)
+        yield from filter(detect_similar, full_paths)
+        if not recursive:
+            break
 
 
 def delete_duplicates(duplicates: Iterable[str]) -> None:
@@ -63,8 +69,8 @@ def parse_args() -> Namespace:
 
 
 def main() -> None:
-    delete_duplicates(get_duplicates())
     args = parse_args()
+    delete_duplicates(get_duplicates(args.recursive))
 
 
 if __name__ == '__main__':
