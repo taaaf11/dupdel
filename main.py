@@ -3,9 +3,11 @@ from __future__ import annotations
 import filecmp
 import os
 import re
+from argparse import ArgumentParser
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from argparse import Namespace
     from re import Match
     from typing import Iterable
 
@@ -49,8 +51,20 @@ def delete_duplicates(duplicates: Iterable[str]) -> None:
             os.rename(duplicate, make_similar_original_path(duplicate))
 
 
+def parse_args() -> Namespace:
+    parser = ArgumentParser(prog='dupdel', description="Remove duplicate files from current directory.")
+    parser.add_argument(
+        '-r',
+        '--recursive',
+        type=bool,
+        help="Delete duplicates recursively.",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
     delete_duplicates(get_duplicates())
+    args = parse_args()
 
 
 if __name__ == '__main__':
